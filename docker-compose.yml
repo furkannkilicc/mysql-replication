@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  mysql-master:
+    image: mysql:latest
+    container_name: mysql-master
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demo
+      MYSQL_USER: repl
+      MYSQL_PASSWORD: repl
+    ports:
+      - "3306:3306"
+    networks:
+      - replicanet
+    volumes:
+      - mysql-master-data:/var/lib/mysql
+    command: --server-id=1 --log-bin=mysql-bin --log-slave-updates=1 --gtid-mode=ON --enforce-gtid-consistency=ON
+
+  mysql-slave1:
+    image: mysql:latest
+    container_name: mysql-slave1
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demo
+      MYSQL_USER: slave1
+      MYSQL_PASSWORD: slave1
+      MYSQL_MASTER_HOST: mysql-master
+      MYSQL_MASTER_PORT: 3306
+      MYSQL_MASTER_USER: repl
+      MYSQL_MASTER_PASSWORD: repl
+    ports:
+      - "3307:3306"
+    networks:
+      - replicanet
+    volumes:
+      - mysql-slave1-data:/var/lib/mysql
+    command: --server-id=2 --log-bin=mysql-bin --log-slave-updates=1 --gtid-mode=ON --enforce-gtid-consistency=ON
+
+  mysql-slave2:
+    image: mysql:latest
+    container_name: mysql-slave2
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demo
+      MYSQL_USER: slave2
+      MYSQL_PASSWORD: slave2
+      MYSQL_MASTER_HOST: mysql-master
+      MYSQL_MASTER_PORT: 3306
+      MYSQL_MASTER_USER: repl
+      MYSQL_MASTER_PASSWORD: repl
+    ports:
+      - "3308:3306"
+    networks:
+      - replicanet
+    volumes:
+      - mysql-slave2-data:/var/lib/mysql
+    command: --server-id=3 --log-bin=mysql-bin --log-slave-updates=1 --gtid-mode=ON --enforce-gtid-consistency=ON
+
+networks:
+  replicanet:
+    driver: bridge
+
+volumes:
+  mysql-master-data:
+  mysql-slave1-data:
+  mysql-slave2-data:
